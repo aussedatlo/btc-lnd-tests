@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  bitcoind:
+    image: kylemanna/bitcoind
+    container_name: bitcoind
+    volumes:
+      - ./data:/bitcoin/.bitcoin
+      - ./bitcoin.conf:/bitcoin/.bitcoin/bitcoin.conf
+    ports:
+      - 8332:8332
+      - 8333:8333
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512m
