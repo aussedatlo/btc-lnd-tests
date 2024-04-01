@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from "react";
-import { BitcoinRpcService } from "../service/BitcoinRpc.service";
+import { BitcoinRpcService } from "../service/BitcoinRpc/BitcoinRpcService";
 
 type BitcoinRpcContextProps = {
   rpc: BitcoinRpcService;

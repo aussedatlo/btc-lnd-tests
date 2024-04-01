@@ -1,10 +1,15 @@
 import axios, { AxiosError } from "axios";
-import { Either, EitherAsync, Left, Right } from "purify-ts";
+import { Either, Left, Right } from "purify-ts";
 import {
   BitcoinRpcServiceErrors,
   LoadingBlockIndexError,
   UnexpectedError,
 } from "./Errors";
+import {
+  BitcoinRpcMethods,
+  BitcoinRpcResponse,
+  BitcoinRpcExtractParamType,
+} from "./Types";
 
 type BitcoinRpcServiceArgs = {
   user: string;
@@ -17,23 +22,39 @@ export class BitcoinRpcService {
   private _host: string;
   private _user: string;
   private _password: string;
+  private _id: number;
 
   constructor({ user, password, host = "rpc" }: BitcoinRpcServiceArgs) {
     this._host = host;
     this._user = user;
     this._password = password;
+    this._id = 0;
   }
 
-  public fetch = async (): Promise<
-    Either<BitcoinRpcServiceErrors, { result: any }>
-  > => {
+  public fetch = async <
+    T extends BitcoinRpcMethods,
+    P extends BitcoinRpcExtractParamType<T>
+  >(
+    method: T,
+    ...rest: P extends typeof undefined
+      ? []
+      : [param: BitcoinRpcExtractParamType<T>]
+  ): Promise<Either<BitcoinRpcServiceErrors, BitcoinRpcResponse<T>>> => {
+    this._id++;
+
+    let params: (string | number)[] = [];
+    rest.forEach((param) => {
+      param && Object.values(param).map((value) => params.push(value));
+    });
+
     try {
       const response = await axios.post(
         this._host,
         {
           jsonrpc: "2.0",
-          method: "getblockchaininfo",
-          id: 1,
+          method,
+          id: this._id,
+          params,
         },
         {
           headers: {
