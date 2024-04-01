@@ -1,4 +1,10 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import { Either, EitherAsync, Left, Right } from "purify-ts";
+import {
+  BitcoinRpcServiceErrors,
+  LoadingBlockIndexError,
+  UnexpectedError,
+} from "./Errors";
 
 type BitcoinRpcServiceArgs = {
   user: string;
@@ -18,7 +24,9 @@ export class BitcoinRpcService {
     this._password = password;
   }
 
-  public fetch = async () => {
+  public fetch = async (): Promise<
+    Either<BitcoinRpcServiceErrors, { result: any }>
+  > => {
     try {
       const response = await axios.post(
         this._host,
@@ -38,9 +46,14 @@ export class BitcoinRpcService {
         }
       );
 
-      return response.data;
-    } catch (e) {
-      console.error(e);
+      return Right(response.data);
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        if (error.response?.data.error === "Loading block index…")
+          return Left(new LoadingBlockIndexError());
+      }
+
+      return Left(new UnexpectedError());
     }
   };
 }

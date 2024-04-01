@@ -22,8 +22,7 @@ export const useBlockchainInfo = () => {
 
   const fetchBlockCount = async () => {
     const response = await rpc.fetch();
-
-    setBlocks(response.result.blocks);
+    response.map((value) => setBlocks(value.result.blocks));
   };
 
   return { blocks };
